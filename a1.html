@@ -11,8 +11,106 @@
   <body>
     <h1>Anushka Sharma's Assignment 1!</h1>
     <div class="header">
-      <img src="red-panda.jpg" />
+      <img src="Cicuit.jpg" />
       <p>Here is all the documentation for assignment 1!</p>
     </div>
+    <!-- Schematic -->
+    <section>
+      <h2>Schematic</h2>
+      <figure>
+        <img src="Schematic.jpg"/>
+        <figcaption>
+          This schematic shows three series circuits that are connected to 3 different LEDs.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Circuit on Breadboard -->
+    <section>
+      <h2>Circuit on Breadboard</h2>
+      <figure>
+        <img src="Cicuit.jpg"/>
+        <figcaption>
+          The Arduino is wired to three LEDs (red, blue and white) on the breadboard, each with its own resistor and ground connection.
+        </figcaption>
+      </figure>
+      <figure>
+        <img src="Calculations.jpg"/>
+        <figcaption>
+          The calculations above show the resistor value for each LED using Ohm's Law (V=IR).
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Firmware Code -->
+    <section>
+      <h2>Firmware Code</h2>
+      <pre><code>
+// Initializing the integer variable timer which represents the delay time value.
+int timer = 250;
+
+void setup() {
+  // Using a for loop to initialize pins 11, 12 and 13 as output.
+  for (int thisPin = 11; thisPin < 14; thisPin++) {
+    pinMode(thisPin, OUTPUT);
+  }
+}
+
+void loop() {
+  // Using a for loop to loop from pin 11 to pin 13.
+  for (int thisPin = 11; thisPin < 14; thisPin++) {
+    // Turning the pin on and its associated LED.
+    digitalWrite(thisPin, HIGH);
+    delay(timer);
+    // Turning the pin off and its associated LED.
+    digitalWrite(thisPin, LOW);
+  }
+
+  // Using a for loop to loop from pin 13 to pin 11 (backwards).
+  for (int thisPin = 13; thisPin >= 11; thisPin--) {
+    // Turning the pin on and its associated LED.
+    digitalWrite(thisPin, HIGH);
+    delay(timer);
+    // Turning the pin off and its associated LED.
+    digitalWrite(thisPin, LOW);
+  }
+}
+      </code></pre>
+    </section>
+
+    <!-- Circuit Operation GIF -->
+    <section>
+      <h2>Circuit Operation</h2>
+      <figure>
+        <img src="circuit_gif.mp4"/>
+        <figcaption>
+          The LEDs blink forward and backward in sequence, each lighting up independently.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Additional Questions -->
+    <section>
+      <h2>Answers to Additional Questions</h2>
+      <h3>1. Draw a graph where the X axis is time and the Y axis is voltage across the LEDs. Draw a line for each of your 3 LEDs.</h3>
+      <figure>
+        <img src="Graph.jpg"/>
+      </figure>
+      <h3>2. How many LEDs could you blink independently with your Arduino? How much current would that draw?</h3>
+      <p>
+        The Arduino has about 13 usable pins, so in theory it could blink 13 LEDs independently. To calculate the current draw,
+        we can use Ohm's Law (I = V/R). Assuming each LED has a voltage of 2V and we are using a 220-ohm resistor for each LED,
+        the current through each LED would be approximately 9.09 mA (I = (5V - 2V) / 220 ohms). Therefore, for 13 LEDs, the total
+        current draw would be approximately 118.17 mA.
+      </p>
+      <h3>3. How fast do you need to blink your LEDs until you no longer can tell that they are blinking?</h3>
+      <p>
+        Setting the timer variable value to about 8 ms in the code would achieves the effect where you no longer
+        tell that the LED's are blinking.
+      </p>
+    </section>
+  </body>
   </body>
 </html>
+
+
