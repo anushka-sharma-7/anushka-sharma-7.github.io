@@ -11,8 +11,149 @@
   <body>
     <h1>Anushka Sharma's Assignment 2!</h1>
     <div class="header">
-      <img src="penguin.jpg.webp" />
+      <img src="fade_cover.jpg" />
       <p>Here is all the documentation for assignment 2!</p>
     </div>
+    <!-- Schematic -->
+    <section>
+      <h2>Schematic</h2>
+      <figure>
+        <img src="fade_schematic.jpg"/>
+        <figcaption>
+          This schematic shows three pins (11, 12, 13) connecting to the red, green and blue LEDs, 
+          and shows a pushbutton connected to pin 2. Each LED has its own resistor.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Circuit on Breadboard -->
+    <section>
+      <h2>Circuit on Breadboard</h2>
+      <figure>
+        <img src="fade_cover.jpg"/>
+        <figcaption>
+          The Arduino is wired to three LEDs (red, green and blue) on the breadboard, 
+          each with its own resistor but shared ground since we are using a RGB LED.
+          A pushbutton is connected to pin 2 and controls the power supply to the RGB LED.
+        </figcaption>
+      </figure>
+      <figure>
+        <img src="fade_calculation.jpg"/>
+        <figcaption>
+          The calculations above show the resistor value for each LED using Ohm's Law (V=IR).
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Arduino Code -->
+    <section>
+      <h2>Arduino Code</h2>
+      <pre><code>
+// /*
+  Code adapted from DojoDave and Tom Igoe
+  created 2005
+  by DojoDave <http://www.0j0.org>
+*/
+
+// Setting up the pins:
+// pushbutton pin
+const int buttonPin = 2; 
+// red led pin    
+const int redPin = 13; 
+// green led pin      
+const int greenPin = 12;
+// blue led pin     
+const int bluePin = 11;      
+
+// storing the button press state
+int buttonState = 0;         
+
+// Setting up the LEDs as input and output
+void setup() {
+  pinMode(buttonPin, INPUT);
+  pinMode(redPin, OUTPUT);
+  pinMode(greenPin, OUTPUT);
+  pinMode(bluePin, OUTPUT);
+}
+
+void loop() {
+  // reading the state of the button (whether the button is pressed or not)
+  buttonState = digitalRead(buttonPin);
+
+  // if the button is pressed, cycle through the RGB colors
+  if (buttonState == HIGH) {
+    // fade red to green
+    fadeColor(redPin, greenPin);  
+    // fade green to blue 
+    fadeColor(greenPin, bluePin);  
+    // fade blue to red
+    fadeColor(bluePin, redPin);    
+  } else {
+    // when the button is released, turn LED off
+    analogWrite(redPin, 0);
+    analogWrite(greenPin, 0);
+    analogWrite(bluePin, 0);
+  }
+}
+
+// function to fade between the colors
+void fadeColor(int fromPin, int toPin) {
+  for (int fadeValue = 0; fadeValue <= 255; fadeValue += 5) {
+    // when the button is not pressed and off
+    if (digitalRead(buttonPin) == LOW) {
+      analogWrite(redPin, 0);
+      analogWrite(greenPin, 0);
+      analogWrite(bluePin, 0);
+      return;
+    }
+    // when the button is pressed and turned on
+    // fading out current color
+    analogWrite(fromPin, 255 - fadeValue); 
+    // fading in next color 
+    analogWrite(toPin, fadeValue); 
+    // setting the delay value to 30         
+    delay(30);
+  }
+}
+      </code></pre>
+    </section>
+
+    <!-- Circuit Operation -->
+    <section>
+      <h2>Circuit Operation</h2>
+      <figure>
+        <img src="fade_video.mov"/>
+        <figcaption>
+          The RGB LED fades from red to green, green to blue and blue to red.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Additional Questions -->
+    <section>
+      <h2>Answers to Additional Questions</h2>
+      <h3>1. Draw a chart where the X axis is time and the Y axis is voltage. Draw 3 lines representing the voltage across
+        an LED with analogWrite(led, 64), analogWrite(led, 128), and analogWrite(led, 255).</h3>
+      <figure>
+        <img src="fade_graph.jpg"/>
+      </figure>
+      <h3>2. Given your schematic, circuit, and firmware, assuming the only thing that draws current is your LEDs, 
+        how long would your circuit run if powered by a 1200 mAh battery?</h3>
+      <p>
+        Using the equation P = V * I, the total power drawn by the LEDs is 5 V * 0.031 A = 0.155 W. 
+        The 1200 mAh (1.2 Ah) battery provides 5 V * 1.2 Ah = 6 Wh of energy. 
+        Dividing the battery’s energy by the power draw (6 Wh / 0.155 W) gives a runtime of approximately 39 hours. 
+        This estimate assumes that only the LEDs draw current and does not account for the Arduino’s power use or conversion losses.
+      </p>
+      <h3>3. Measure and record the actual voltage across one of your LEDs when it's on. 
+        How does this compare to the theoretical forward voltage for your LED color?</h3>
+      <p>
+        When measured, the voltage across the LED was approximately 1.9 V. This is very close to the theoretical 
+        forward voltage of 1.8 V for a red LED. The small difference can be explained by variations 
+        in the LED’s manufacturing and the current flowing through the circuit. Overall, the measured value is almost at 
+        the expected forward voltage.
+      </p>
+    </section>
+  </body>
   </body>
 </html>
