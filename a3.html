@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+
+    <title>Anushka Sharma's HCDE 439 Physical Computing Page!</title>
+
+    <link href="style.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <h1>Anushka Sharma's Assignment 3!</h1>
+    <div class="header">
+      <img src="a3_circuit.jpg" />
+      <p>Here is all the documentation for assignment 3!</p>
+    </div>
+    <!-- Schematic -->
+    <section>
+      <h2>Schematic</h2>
+      <figure>
+        <img src="a3_schematic.jpg"/>
+        <figcaption>
+          This schematic shows two pins (digital 3 and 6) connecting to the red and white LEDs, 
+          and shows a photoresistor connected to analog pin A0. Each LED has its own resistor 
+          as well as the photoresistor.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Circuit on Breadboard -->
+    <section>
+      <h2>Circuit on Breadboard</h2>
+      <figure>
+        <img src="a3_circuit.jpg"/>
+        <figcaption>
+          The Arduino is wired to two LEDs (red and white) on the breadboard, 
+          each with its own resistor (220 ohms for red and 100 ohms for white).
+          A photoresistor is connected to analog pin A0 and controls the power supply
+          to either the red or white LED based on the ambient light level.
+        </figcaption>
+      </figure>
+      <figure>
+        <img src="a3_calculations.jpg"/>
+        <figcaption>
+          The calculations above show the resistor value for each LED using Ohm's Law (V=IR),
+          and the calculated resistor value and voltage range for the photoresistor voltage divider.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Arduino Code -->
+    <section>
+      <h2>Arduino Code</h2>
+      <pre><code>
+// Code for this assignment is adapted from the sample code shown
+// in class by prof. Blair!
+
+// Initializing the pins
+// initializing the analog pin
+const int analogInPin = A0;
+// initializing the digital led pins
+const int redPin = 6;
+const int whitePin = 3;
+
+// Setting up the led pins in the circuit
+void setup() {
+  // setting the red and white led pins to be output so that they blink
+  pinMode(redPin, OUTPUT);
+  pinMode(whitePin, OUTPUT);
+
+// setting up serial so that the arduino can communicate with computer
+// and return human readable data. Setting speed to standard value of 9600.
+  Serial.begin(9600);
+}
+
+// Initializing sensorValue which returns back the value associated with
+// photoresistor (how much light is hitting the sensor).
+int sensorValue;
+// Initializing mappedValue which re-maps the sensorValue to another range.
+int mappedValue;
+
+void loop() {
+  // Setting sensorValue to equal what the sensor is reading in based on
+  // how much light is hitting the sensor.
+  sensorValue = analogRead(analogInPin);
+  // Using the constrain fucntion on sensorValue to contain its range between
+  // the minimum read value of 550 and maximum read value of 830.
+  sensorValue = constrain(sensorValue, 550, 830);
+  // Printing out the sensor value being read by the sensor to our terminal
+  // so that we can track the min and max values.
+  Serial.print("Sensor Value: ");
+  Serial.print(sensorValue);
+
+  // Setting mappedValue to equal the sensor value but in the re-mapped range
+  // from 0 to 255. These values were decided based on the sensorValue readings
+  // being returned to the terminal. 
+  mappedValue = map(sensorValue, 550, 830, 0, 255);
+  // Printing out the mapped value being read by the sensor to our terminal
+  // so that we can track the min and max values.
+  Serial.print("\t Mapped Value: ");
+  Serial.println(mappedValue);
+  // Controlling the brightness of the red LED with analogWrite where mappedValue
+  // is the int value for the duty cycle.
+  analogWrite(redPin, mappedValue);
+
+  // Using an if loop and the mapped value to determine whether the red or
+  // white LED will turn on.
+  if (mappedValue < 100) {
+    // If the mappedValue is less than 100 (the sensor is covered/has low light),
+  // the red LED will turn on and white LED will remain off.
+    digitalWrite(redPin, HIGH);
+    digitalWrite(whitePin, LOW);
+  } 
+   
+  else if (mappedValue >= 100){
+    // Else if the mappedValue is greater than or equal to 100 (the sensor is not
+    // covered/has light), the white LED will turn on and the red LED will remain off.
+    digitalWrite(redPin, LOW);
+    digitalWrite(whitePin, HIGH);
+  }
+}
+      </code></pre>
+    </section>
+
+    <!-- Circuit Operation -->
+    <section>
+      <h2>Circuit Operation</h2>
+      <figure>
+        <video src="a3_video.MOV"/>
+        <figcaption>
+          When the photoresistor is covered, the red LED lights up. When the photoresistor is uncovered,
+          the white LED lights up.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Additional Questions -->
+    <section>
+      <h2>Answers to Additional Questions</h2>
+      <h3>1. In your voltage divider, can the variable resistor be either R1 
+        or R2 or does it need to be one or the other? Justify your answer with example calculations.</h3>
+        <p>
+            The variable resistor can be either R1 or R2 in the voltage divider, but the choice affects the output voltage range. 
+            If the variable resistor is R1, the output voltage (Vout) will vary from 0V to a maximum value determined by the fixed resistor (R2). 
+            Conversely, if the variable resistor is R2, Vout will vary from a minimum value determined by R1 to the supply voltage (Vin). 
+            For example, with Vin = 5V and R1 = 10kΩ:
+            - If R2 is variable (0 to 10kΩ), Vout ranges from 0V to 2.5V.
+            - If R1 is variable (0 to 10kΩ), Vout ranges from 2.5V to 5V.
+            Thus, the choice of which resistor is variable determines whether Vout can reach 0V or Vin.
+        </p>
+      <h3>2.  Draw a graph where the x-axis is time and the y-axis is voltage. 
+        Plot the voltage at V-measure of your voltage divider of your shared gif.</h3>
+      <figure>
+        <img src="a3_graph.jpg"/>
+      </figure>
+      <h3>3. AnalogWrite and analogRead are respectively 8-bit and 10-bit values. Imagine you had 10-bit PWM and 
+        a 16-bit analog-to-digital converter instead. How would this change your map() code? Explain your answer.</h3>
+      <p>
+        If we had a 10-bit PWM and a 16-bit analog-to-digital converter (ADC), the range of values for both would change significantly. 
+        A 10-bit PWM can produce values from 0 to 1023 (2^10 - 1), while a 16-bit ADC can read values from 0 to 65535 (2^16 - 1). 
+        Therefore, the map() function in the code would need to be adjusted to accommodate these new ranges. 
+        Specifically, the mapping would change from mapping a range of 0-255 (for 8-bit PWM) to mapping a range of 0-1023 (for 10-bit PWM) 
+        based on the input from a range of 0-65535 (for 16-bit ADC).   
+      </p>
+    </section>
+  </body>
+  </body>
+</html>
