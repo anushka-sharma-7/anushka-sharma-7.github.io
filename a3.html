@@ -126,7 +126,7 @@ void loop() {
     <section>
       <h2>Circuit Operation</h2>
       <figure>
-        <video src="a3_video.MOV"/>
+        <video src="a3_video.mov"/>
         <figcaption>
           When the photoresistor is covered, the red LED lights up. When the photoresistor is uncovered,
           the white LED lights up.
@@ -142,10 +142,10 @@ void loop() {
         <p>
             The variable resistor can be either R1 or R2 in the voltage divider, but the choice affects the output voltage range. 
             If the variable resistor is R1, the output voltage (Vout) will vary from 0V to a maximum value determined by the fixed resistor (R2). 
-            Conversely, if the variable resistor is R2, Vout will vary from a minimum value determined by R1 to the supply voltage (Vin). 
-            For example, with Vin = 5V and R1 = 10kΩ:
-            - If R2 is variable (0 to 10kΩ), Vout ranges from 0V to 2.5V.
-            - If R1 is variable (0 to 10kΩ), Vout ranges from 2.5V to 5V.
+            However, if the variable resistor is R2, Vout will vary from a minimum value determined by R1 to the supply voltage (Vin). 
+            For example, with Vin = 5V and R1 = 10k ohms:
+            - If R2 is variable (0 to 10k ohms), Vout ranges from 0V to 2.5V.
+            - If R1 is variable (0 to 10k ohms), Vout ranges from 2.5V to 5V.
             Thus, the choice of which resistor is variable determines whether Vout can reach 0V or Vin.
         </p>
       <h3>2.  Draw a graph where the x-axis is time and the y-axis is voltage. 
