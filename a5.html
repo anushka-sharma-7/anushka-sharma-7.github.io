@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+
+    <title>Anushka Sharma's HCDE 439 Physical Computing Page!</title>
+
+    <link href="style.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <h1>Anushka Sharma's Assignment 5!</h1>
+    <div class="header">
+      <img src="a5_curcuit.jpg" />
+      <p>Here is all the documentation for assignment 5!</p>
+    </div>
+    <!-- Schematic -->
+    <section>
+      <h2>Schematic</h2>
+      <figure>
+        <img src="a5_schematic.jpg"/>
+        <figcaption>
+          This schematic shows an Arduino connected to an IR receiver and an LED strip controlled by an N-channel MOSFET. 
+          The IR receiver’s signal pin connects to digital pin 2, and the MOSFET gate connects to digital pin 9, with its 
+          drain connected to the LED strip’s negative terminal and its source to ground. The LED strip is powered by an 
+          external 12 V supply that shares a common ground with the Arduino.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Circuit on Breadboard -->
+    <section>
+      <h2>Circuit on Breadboard</h2>
+      <figure>
+        <img src="a5_curcuit.jpg"/>
+        <figcaption>
+          This breadboard shows the Arduino connected to the IR receiver and MOSFET, which controls the LED strip. 
+          The IR receiver is wired to 5V, ground, and pin 2, while the MOSFET’s gate connects to pin 9 through a 
+          resistor, the drain to the LED strip’s negative lead, and the source to ground.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Arduino Code -->
+    <section>
+      <h2>Arduino Code</h2>
+      <pre><code>
+/*
+  IR Remote Controlled Fade
+  -------------------------
+  This code is adapted from the fade example provided in Arduino
+  IDE and by the examples found in the following class resource
+  provided - https://learn.sparkfun.com/tutorials/ir-control-kit-hookup-guide/all#:~:text=Download%20and%20Install%20Ken%20Shirriff%27s,Ken%20Shirriff%27s%20IRremote%20Library%20(ZIP)
+*/
+
+// Using the IRemote library
+#include <IRremote.hpp>  
+
+// Defining the pin connections
+// PWM pin connected to MOSFET gate controlling LED strip
+int led = 9; 
+// IR receiver signal pin (using digital pin 2)            
+int recvPin = 2;         
+
+// Defining variables for fade logic (adapted from fade example)
+// Current LED brightness (0–255)
+int brightness = 0; 
+// Brightness change per loop cycle     
+int fadeAmount = 5;  
+// Keeping track if fade effect is active or not    
+bool fadeOn = false;     
+
+// Defining remote button code
+// My remote button's code is 69 as tested through the serial monitor
+#define POWER_BUTTON 69   
+
+void setup() {
+  // Using serial monitor to know button code of my remote
+  Serial.begin(9600);
+
+  // Initializing the IR receiver on pin 2
+  IrReceiver.begin(recvPin, ENABLE_LED_FEEDBACK);
+
+  // Setingt LED pin as output (controls MOSFET gate)
+  pinMode(led, OUTPUT);
+
+  // Starting with LED strip off
+  analogWrite(led, 0);
+}
+
+void loop() {
+  // Checking if an IR signal has been received
+  if (IrReceiver.decode()) {
+    // Printing received command to serial monitor (to debug if needed)
+    // Adapted from learn.sparkfun example code
+    Serial.print("Received command: ");
+    Serial.println(IrReceiver.decodedIRData.command);
+
+    // If the received command matches my power button code (69)
+    if (IrReceiver.decodedIRData.command == POWER_BUTTON) {
+      // We want to toggle fade mode ON or OFF
+      fadeOn = !fadeOn;
+      Serial.println(fadeOn ? "Fade ON" : "Fade OFF");
+    }
+
+    // Resuming IR receiver to listen for the next signal
+    // Adaptd from learn.sparkfun example code
+    IrReceiver.resume();
+  }
+
+  // If fade mode is ON, run the fade effect
+  if (fadeOn) {
+    // Writing the current brightness value to the LED (PWM output)
+    analogWrite(led, brightness);
+
+    // Changing brightness for next cycle
+    brightness = brightness + fadeAmount;
+
+    // Reversing fade direction at ends of range
+    if (brightness <= 0 || brightness >= 255) {
+      fadeAmount = -fadeAmount;
+    }
+
+    // Small delay
+    delay(30);
+  } 
+  else {
+    // If fade mode is OFF, keep LED off
+    analogWrite(led, 0);
+  }
+}
+      </code></pre>
+    </section>
+
+    <!-- Circuit Operation -->
+    <section>
+      <h2>Circuit Operation</h2>
+      <figure>
+        <img src="a5_gif.mp4"/>
+        <figcaption>
+          When the photoresistor is covered, the red LED lights up. When the photoresistor is uncovered,
+          the white LED lights up.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Additional Questions -->
+    <section>
+      <h2>Answers to Additional Questions</h2>
+      <h3>1. What is the absolute maximum amount of current between pins 2 and 3?</h3>
+        <p>
+            The absolute maximum amount of current between pins 2 and 3 is 37.2 amps considering case temperature
+            of 25 degrees Celsius.
+        </p>
+      <h3>2. Draw a schematic for a circuit with using at least your arduino, a DC motor, a flyback diode, and capacitors between 
+        power and ground. Find parts with datasheets you could use for each of these schematic components.</h3>
+      <figure>
+        <img src="a5_q2.jpg"/>
+      </figure>
+      <h3>3. Draw a schematic using at least your arduino, this chip, and two motors. Write (pseudo) code that shows how 
+        you would move the motors both forward, both back, then one forward one back, and one back then forward.</h3>
+      <figure>
+        <img src="a5_q3.jpg"/>
+      </figure>
+        <pre><code>
+            // Pin assignments
+            // PWM for motor A
+            enableA = 5  
+            in1 = 2
+            in2 = 3
+            // PWM for motor B
+            enableB = 6  
+            in3 = 4
+            in4 = 7
+
+            setup() {
+            pinMode(enableA, OUTPUT);
+            pinMode(in1, OUTPUT);
+            pinMode(in2, OUTPUT);
+
+            pinMode(enableB, OUTPUT);
+            pinMode(in3, OUTPUT);
+            pinMode(in4, OUTPUT);
+
+            // Start with motors stopped
+            digitalWrite(in1, LOW);
+            digitalWrite(in2, LOW);
+            analogWrite(enableA, 0);
+
+            digitalWrite(in3, LOW);
+            digitalWrite(in4, LOW);
+            analogWrite(enableB, 0);
+            }
+
+            loop() {
+            // 1 - Both forward
+            // Motor A forward
+            digitalWrite(in1, HIGH);   
+            digitalWrite(in2, LOW);
+            // Motor B forward
+            digitalWrite(in3, HIGH);   
+            digitalWrite(in4, LOW);
+            // speed 0..255
+            analogWrite(enableA, 200); 
+            analogWrite(enableB, 200);
+            delay(2000);
+
+            // 2 - Both back
+            // Motor A reverse
+            digitalWrite(in1, LOW);    
+            digitalWrite(in2, HIGH);
+            // Motor B reverse
+            digitalWrite(in3, LOW);    
+            digitalWrite(in4, HIGH);
+            analogWrite(enableA, 200);
+            analogWrite(enableB, 200);
+            delay(2000);
+
+            // 3 - One forward, one back
+            // Motor A forward
+            digitalWrite(in1, HIGH);   
+            digitalWrite(in2, LOW);
+            // Motor B reverse
+            digitalWrite(in3, LOW);    
+            digitalWrite(in4, HIGH);
+            analogWrite(enableA, 200);
+            analogWrite(enableB, 200);
+            delay(2000);
+
+            // 4 - One back, then forward (swap)
+            // Motor A reverse
+            digitalWrite(in1, LOW);    
+            digitalWrite(in2, HIGH);
+            // Motor B forward
+            digitalWrite(in3, HIGH);   
+            digitalWrite(in4, LOW);
+            analogWrite(enableA, 200);
+            analogWrite(enableB, 200);
+            delay(2000);
+
+            // Stop motors
+            analogWrite(enableA, 0);
+            analogWrite(enableB, 0);
+            delay(1000);
+            }
+      </code></pre>
+    </section>
+  </body>
+  </body>
+</html>
