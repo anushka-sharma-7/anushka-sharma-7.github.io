@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+
+    <title>Anushka Sharma's HCDE 439 Physical Computing Page!</title>
+
+    <link href="style.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <h1>Anushka Sharma's Assignment 6!</h1>
+    <div class="header">
+      <img src="a6_circuit.jpg" />
+      <p>Here is all the documentation for assignment 6!</p>
+    </div>
+    <!-- Schematic -->
+    <section>
+      <h2>Schematic</h2>
+      <figure>
+        <img src="a6_schematic.jpeg"/>
+        <figcaption>
+          This schematic shows three series circuits that are connected to 3 different LEDs.
+          The circuit also includes a joystick module connected to the Arduino to control the LEDs.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Circuit on Breadboard -->
+    <section>
+      <h2>Circuit on Breadboard</h2>
+      <figure>
+        <img src="a6_circuit.jpg"/>
+        <figcaption>
+            The Arduino is wired to three LEDs (red, green and blue) on the breadboard, each with its own resistor and ground connection.
+            A joystick module is connected to the Arduino to control which LED lights up based on the joystick's position.
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- Firmware Code -->
+    <section>
+      <h2>JavaScript Code</h2>
+      <pre><code>
+// store the serial port object
+let port = null;
+
+// store the reader that will read incoming text from Arduino
+let reader = null;
+
+// get the Connect button from index.html page
+const connectButton = document.getElementById("connectButton");
+
+// get the ALL ON/OFF button from index.html page
+const toggleButton = document.getElementById("toggleButton");
+
+// keep track of the last color shown on the screen
+let lastColorShown = "";
+
+
+// add a click event to the Connect button
+connectButton.addEventListener("click", async () => {
+
+  // open a popup asking the user to select their Arduino port
+  port = await navigator.serial.requestPort();
+
+  // open the selected port with baud rate 9600
+  await port.open({ baudRate: 9600 });
+
+  // create a text decoder to convert incoming bytes into readable text
+  const textDecoder = new TextDecoderStream();
+
+  // pipe the raw serial data into the decoder
+  port.readable.pipeTo(textDecoder.writable);
+
+  // create a reader to read decoded lines of text
+  reader = textDecoder.readable.getReader();
+
+  // begin reading from the Arduino continuously
+  readLoop();
+
+  // change the button label to show we are connected
+  connectButton.textContent = "Connected (click to disconnect)";
+
+  // replace the click action so clicking again will disconnect
+  connectButton.onclick = async () => {
+
+    // if we are reading, stop the reader
+    if (reader) {
+      await reader.cancel();      // stop reading
+      reader.releaseLock();       // free the reader lock
+      reader = null;              // clear reader object
+    }
+
+    // close the serial port
+    await port.close();
+
+    // reset the port variable
+    port = null;
+
+    // change button text back to normal
+    connectButton.textContent = "Connect to Arduino";
+
+    // reset screen background
+    document.body.style.backgroundColor = "white";
+
+    // reset last color shown
+    lastColorShown = "";
+  };
+});
+
+
+// add a click event for the ALL ON/OFF toggle button
+toggleButton.addEventListener("click", async () => {
+
+  // check if we are connected to Arduino
+  if (!port) {
+    alert("Connect to Arduino first.");
+    return;
+  }
+
+  // if current button text is "Turn ALL ON", switch it and send ALL_ON
+  if (toggleButton.textContent === "Turn ALL ON") {
+    toggleButton.textContent = "Turn ALL OFF"; // update label
+    await writeToPort("ALL_ON\n");             // send message to Arduino
+  } 
+  
+  // otherwise switch to ALL ON mode
+  else {
+    toggleButton.textContent = "Turn ALL ON";  // update label
+    await writeToPort("ALL_OFF\n");            // send message to Arduino
+  }
+});
+
+
+// function to safely send data to Arduino
+async function writeToPort(text) {
+
+  // stop if not connected or port isn't writable
+  if (!port || !port.writable) return;
+
+  // create a writer to send bytes through the serial port
+  const writer = port.writable.getWriter();
+
+  // convert the text into binary for sending
+  const data = new TextEncoder().encode(text);
+
+  // send the message
+  await writer.write(data);
+
+  // release the lock so future writes work correctly
+  writer.releaseLock();
+}
+
+
+// continuously read from Arduino and process incoming messages
+async function readLoop() {
+
+  // temporary storage for pieces of data
+  let buffer = "";
+
+  // loop forever until disconnected
+  while (true) {
+    try {
+
+      // read value (string chunk) from Arduino
+      const { value, done } = await reader.read();
+
+      // if reader is closed, exit loop
+      if (done) {
+        break;
+      }
+
+      // if we received actual content
+      if (value) {
+
+        // add to buffer in case a full line didn't arrive yet
+        buffer += value;
+
+        // split buffer into complete lines using newline
+        const lines = buffer.split('\n');
+
+        // save leftover partial line back into buffer
+        buffer = lines.pop();
+
+        // process every full line we received
+        for (let line of lines) {
+
+          // remove extra spaces
+          const color = line.trim();
+
+          // ignore empty lines
+          if (color.length > 0) {
+
+            // update the screen based on the color name
+            updateBackground(color);
+          }
+        }
+      }
+    } 
+  }
+}
+
+// change the screen background only when color actually changes
+function updateBackground(color) {
+
+  // if color is the same as before, do nothing
+  if (color === lastColorShown) return;
+
+  // store new color
+  lastColorShown = color;
+
+  // set background depending on the color name sent by Arduino
+  if (color === "Red") {
+    document.body.style.backgroundColor = "red";
+  } 
+  else if (color === "Green") {
+    document.body.style.backgroundColor = "green";
+  } 
+  else if (color === "Blue") {
+    document.body.style.backgroundColor = "blue";
+  } 
+  else if (color === "All") {
+    document.body.style.backgroundColor = "white"; // all LEDs are on
+  } 
+  else {
+    // if joystick is centered or no LED is on
+    document.body.style.backgroundColor = "lightgray";
+  }
+}
+      </code></pre>
+    </section>
+    <section>
+      <h2>Arduino Code</h2>
+      <pre><code>
+// initialze pins
+int xPin = A0;          // Joystick X-axis connected to analog pin A0
+int yPin = A1;          // Joystick Y-axis connected to analog pin A1
+int redLED = 9;         // Red LED connected to digital pin 9
+int greenLED = 10;      // Green LED connected to digital pin 10
+int blueLED = 11;       // Blue LED connected to digital pin 11
+
+// state
+String currentColor = "None"; // Stores the last color we sent to the webpage
+bool allOn = false;           // Tracks if ALL LEDs should be turned on
+
+void setup() {
+  Serial.begin(9600);          // Start serial communication at 9600 baud
+  pinMode(redLED, OUTPUT);     // Set red LED pin as output
+  pinMode(greenLED, OUTPUT);   // Set green LED pin as output
+  pinMode(blueLED, OUTPUT);    // Set blue LED pin as output
+}
+
+void loop() {
+  // read serial commands from webpage
+  if (Serial.available() > 0) {          // Check if the webpage sent something
+    String cmd = Serial.readStringUntil('\n'); // Read the command as a string
+    cmd.trim();                           // Remove extra spaces or line breaks
+
+    if (cmd == "ALL_ON") {                // If webpage said "ALL_ON"
+      allOn = true;                       // Enable all-on mode
+    } else if (cmd == "ALL_OFF") {        // If webpage said "ALL_OFF"
+      allOn = false;                      // Disable all-on mode
+    }
+    // The loop will continue and update LEDs accordingly
+  }
+
+  // read joystick
+  int x = analogRead(xPin);   // Read the X-axis joystick value (0–1023)
+  int y = analogRead(yPin);   // Read the Y-axis joystick value (0–1023)
+
+  // Start with default color
+  String newColor = "None";
+
+  // turn all LEDs off first
+  digitalWrite(redLED, LOW);    // Turn red off
+  digitalWrite(greenLED, LOW);  // Turn green off
+  digitalWrite(blueLED, LOW);   // Turn blue off
+
+  if (allOn) {
+    // ALL ON mode 
+    digitalWrite(redLED, HIGH);    // Turn red on
+    digitalWrite(greenLED, HIGH);  // Turn green on
+    digitalWrite(blueLED, HIGH);   // Turn blue on
+    newColor = "All";              // Tell webpage all LEDs are on
+  } 
+  else {
+    // Single-color joystick mode
+    if (y > 700) {                 // Joystick pushed UP
+      digitalWrite(redLED, HIGH);  // Turn on red LED
+      newColor = "Red";            // Report red
+    } 
+    else if (x < 300) {            // Joystick pushed LEFT
+      digitalWrite(greenLED, HIGH);// Turn on green LED
+      newColor = "Green";          // Report green
+    } 
+    else if (x > 700) {            // Joystick pushed RIGHT
+      digitalWrite(blueLED, HIGH); // Turn on blue LED
+      newColor = "Blue";           // Report blue
+    } 
+    else {
+      newColor = "None";           // Joystick centered means no LED
+    }
+  }
+
+  // send an update ONLY when the color changed
+  if (newColor != currentColor) {  // Check if the color changed
+    currentColor = newColor;       // Save new color
+    Serial.println(currentColor);  // Send color name to the webpage
+  }
+
+  delay(120);  // Delay to slow down the loop so serial updates don't spam
+      </code></pre>
+    </section>
+
+    <!-- Circuit Operation GIF -->
+    <section>
+      <h2>Circuit Operation</h2>
+      <figure>
+        <img src="a6_gif.mp4"/>
+        <figcaption>
+            The joystick controls which LED lights up on the breadboard. Pushing the joystick up lights the red LED, left lights the green LED, and right lights the blue LED. 
+            Pressing the "Turn ALL ON" button on the webpage lights up all three LEDs simultaneously, while "Turn ALL OFF" turns them off.
+        </figcaption>
+      </figure>
+    </section>
+  </body>
+  </body>
+</html>
+
+
